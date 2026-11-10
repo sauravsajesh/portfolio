@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-type="software" data-radius="sharp" data-buttons="solid" data-motion>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saurav Sajesh: embedded AI engineer in Ilmenau, Germany</title>
+<meta name="description" content="Portfolio of an engineer who puts machine-learning models on microcontrollers, edge accelerators and robots: a master's thesis, two papers and four projects.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Saurav Sajesh: embedded AI engineer in Ilmenau, Germany">
+<meta property="og:description" content="Machine-learning models on a Cortex-M4, an Edge TPU and a ROS robot: a master's thesis, two papers and four projects.">
+<meta property="og:image" content="share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0d10">
+<!-- canonical: add the link rel="canonical" line here once the site has its own domain -->
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/motion/motion.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<link rel="stylesheet" href="assets/icons/icon.css">
+<!-- palette and type as start.mjs brand printed them: obsidian ground, bone ink, one amber accent; Geist and Geist Mono -->
+<style>
+:root {
+  --p-bg: #0b0d10; --p-surface: #14171c; --p-ink: #ece8df; --p-muted: #9aa0a6;
+  --p-accent: #e0a458; --p-accent-ink: #0b0d10; --p-action: #e0a458; --p-action-ink: #0b0d10;
+  --p-inv-bg: #ece8df; --p-inv-surface: #dad6ce; --p-inv-ink: #0b0d10; --p-inv-muted: #555655;
+  --p-inv-accent: #0b0d10; --p-inv-accent-ink: #ece8df; --p-inv-action: #0b0d10; --p-inv-action-ink: #ece8df;
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-text: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.045em;
+}
+</style>
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/diagrams/diagram.css">
+<link rel="stylesheet" href="css/page.css">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="assets/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="assets/moments/moments.js">
+<link rel="modulepreload" href="assets/moments/lib.js">
+<link rel="modulepreload" href="assets/moments/word-highlight/moment.js">
+</head>
+<body>
+<!-- type: software (page type software, site-kind software): an embedded AI engineer's portfolio
+     deal: hero product, nav nav-centre, close close-word, footer footer-columns, rhythm space, buttons solid, mark initial
+     palette: the brief's own colours through start.mjs brand (obsidian #0b0d10, bone ink, amber accent); type geist; radius sharp
+     effect: the orbit canvas on the hero stage (js/orbit.js); moments: word-highlight in #approach
+     Content comes from js/data.js; js/app.js renders the explorer, the skills and the history from it. -->
+
+<header class="nav nav--centre">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top">Skip to content</a>
+    <a class="nav__logo" href="#top"><span class="mark mark--initial" aria-hidden="true">S</span>Saurav Sajesh</a>
+    <nav class="nav__links" aria-label="Main">
+      <div class="nav__item"><a class="nav__link" href="#projects">Projects</a></div>
+      <div class="nav__item"><a class="nav__link" href="#approach">Approach</a></div>
+      <div class="nav__item"><a class="nav__link" href="#skills">Skills</a></div>
+      <div class="nav__item"><a class="nav__link" href="#experience">Experience</a></div>
+    </nav>
+    <div class="nav__actions">
+      <span class="magnet"><a class="btn btn--primary" href="mailto:saurav.sajesh2001@gmail.com">Email Saurav</a></span>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO (product stage): the head row, then the portrait on the page ground with the orbit canvas round it.
+       The portrait is a still picture; the two canvases draw the orbits behind and in front of it (js/orbit.js). -->
+  <section class="hero hero--product" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text hero__in">
+      <div class="hero__head">
+        <div>
+          <h1 id="hero-h">Saurav Sajesh, embedded AI engineer</h1>
+          <p class="hero__lead">I put machine-learning models on constrained hardware: a Cortex-M4, an Edge TPU, a ROS robot. M.Eng. 2026, thesis grade 1.9.</p>
+        </div>
+        <div class="btn-row">
+          <span class="magnet"><a class="btn btn--primary" href="mailto:saurav.sajesh2001@gmail.com">Email Saurav<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a></span>
+          <a class="btn btn--secondary" href="#projects">See the projects</a>
+        </div>
+      </div>
+      <div class="hero__stage" data-orbit>
+        <canvas class="orbit orbit--back" aria-hidden="true"></canvas>
+        <img class="is-cutout" src="media/avatar-620.webp" srcset="media/avatar-620.webp 620w, media/avatar-1240.webp 1240w" sizes="(max-width: 639px) 86vw, 566px" width="620" height="620" alt="Portrait of Saurav Sajesh drawn in amber halftone dots: glasses, a short beard and a light shirt" fetchpriority="high" data-source="client" data-subject="portrait">
+        <canvas class="orbit orbit--front" aria-hidden="true"></canvas>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- PROJECTS (app-frame): the list beside the open item in one window; rendered from js/data.js.
+       Each project's Overview holds a media slot: a still now, a Higgsfield or Fable loop once its file is named in data.js. -->
+  <section class="section" id="projects" aria-labelledby="projects-h">
+    <div class="wrap">
+      <div class="grid px-head">
+        <h2 class="span-5" id="projects-h">A thesis, two papers and four builds</h2>
+        <div class="span-6 start-7 px-head__text">
+          <p>Pick a project on the left. The right side gives its summary, the architecture step by step, then the stack and the measured results.</p>
+          <a class="link" href="https://github.com/sauravsajesh/energy-forecasting-mlops" rel="noopener">See the code on GitHub</a>
+        </div>
+      </div>
+      <div class="ui px fill" id="explorer" data-px>
+        <div class="px__pane px__pane--list">
+          <div class="px__bar">
+            <span class="px__bar-title">Work</span>
+            <div class="px__filters" role="group" aria-label="Show projects by area" data-px-filters></div>
+          </div>
+          <div class="px__rows" role="tablist" aria-orientation="vertical" aria-label="Projects" data-px-rows></div>
+        </div>
+        <div class="px__pane px__pane--open" data-px-open>
+          <div class="px__top">
+            <button class="px__back" type="button" data-px-back><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>All projects</button>
+            <div class="px__heads" data-px-heads></div>
+            <div class="px__facets" role="tablist" aria-label="Project detail">
+              <button class="px__facet" type="button" role="tab" id="px-t-overview" aria-selected="true" aria-controls="px-f-overview">Overview</button>
+              <button class="px__facet" type="button" role="tab" id="px-t-architecture" aria-selected="false" aria-controls="px-f-architecture">Architecture</button>
+              <button class="px__facet" type="button" role="tab" id="px-t-stack" aria-selected="false" aria-controls="px-f-stack">Stack and results</button>
+            </div>
+          </div>
+          <div class="px__body">
+            <div class="px__facet-panel" role="tabpanel" id="px-f-overview" aria-labelledby="px-t-overview" data-px-facet="overview"></div>
+            <div class="px__facet-panel" role="tabpanel" id="px-f-architecture" aria-labelledby="px-t-architecture" data-px-facet="architecture" hidden></div>
+            <div class="px__facet-panel" role="tabpanel" id="px-f-stack" aria-labelledby="px-t-stack" data-px-facet="stack" hidden></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- word-highlight: one statement of 12 to 40 words in its own section, one strong word in <strong> -->
+  <section class="section statement" id="approach" data-moment="word-highlight" aria-label="Approach">
+    <div class="wrap">
+      <p class="t-label">Approach</p>
+      <p class="mo-wh__text">A model is finished when it runs on the device, inside its memory and its latency limit. I build for that point: quantized networks on a microcontroller, vision on an <strong>Edge TPU</strong>, navigation on a robot.</p>
+    </div>
+  </section>
+
+  <!-- SKILLS (tabs-tour): four competencies, one at a time; each skill names the projects it was used in -->
+  <section class="section" id="skills" aria-labelledby="skills-h">
+    <div class="wrap">
+      <div class="grid grid--top fill sk">
+        <div class="span-5 sk__text">
+          <div class="section-head">
+            <h2 id="skills-h">Skills, each with the project behind it</h2>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Skills by area" data-sk-tabs></div>
+          <div class="sk__panels" data-sk-panels></div>
+        </div>
+        <div class="span-6 start-7 sk__frame" data-sk-screens></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE: the history as ruled rows, beside one diagram of what goes in and where it runs -->
+  <section class="section" id="experience" aria-labelledby="experience-h">
+    <div class="wrap">
+      <div class="grid grid--top fill xp">
+        <div class="span-5 xp__text">
+          <div class="section-head">
+            <h2 id="experience-h">Experience and education</h2>
+          </div>
+          <ul class="rows xp__rows" data-xp-rows></ul>
+        </div>
+        <div class="span-6 start-7 xp__side">
+          <div class="frame xp__frame">
+            <div class="dg" data-diagram><script type="application/json">{
+              "layout": "bowtie",
+              "alt": "Vibration, speech, LiDAR and camera data go into one model, which is deployed to a Cortex-M4, an Edge TPU, a Raspberry Pi and Azure.",
+              "sources": [
+                { "label": "Vibration", "icon": "ui:activity", "sub": "Bearings" },
+                { "label": "Speech", "icon": "ui:audio-lines", "sub": "8 emotions" },
+                { "label": "LiDAR", "icon": "ui:radar", "sub": "SLAM" },
+                { "label": "Camera", "icon": "ui:scan-eye", "sub": "OpenCV" }
+              ],
+              "core": { "label": "Model", "icon": "ui:brain" },
+              "targets": [
+                { "label": "Cortex-M4", "icon": "ui:microchip", "sub": "ASH-HI" },
+                { "label": "Edge TPU", "icon": "ui:cpu", "sub": "MobileNet V2" },
+                { "label": "Raspberry Pi", "icon": "raspberry-pi", "sub": "ROS, SLAM" },
+                { "label": "Azure", "icon": "azure", "sub": "LSTM API" }
+              ]
+            }</script></div>
+          </div>
+          <div class="xp__extra" data-xp-extra></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer closing" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--word">
+      <div class="section-head--split">
+        <div><h2 id="close-h">Email Saurav about an embedded AI role</h2><p class="t-lead">Based in Ilmenau, Germany, and willing to relocate.</p></div>
+        <span class="magnet"><a class="btn btn--primary" href="mailto:saurav.sajesh2001@gmail.com">Email Saurav<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a></span>
+      </div>
+      <p class="close__word" aria-hidden="true">Saurav Sajesh</p>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo" href="#top"><span class="mark mark--initial" aria-hidden="true">S</span>Saurav Sajesh</a>
+          <p class="footer__lede">Embedded AI engineer in Ilmenau, Germany.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>Projects</h3><ul><li><a href="#projects?p=thesis">Master's thesis</a></li><li><a href="#projects?p=aersut">Two papers</a></li><li><a href="#projects?p=energy">Four builds</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Approach</h3><ul><li><a href="#approach">How I work</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Skills</h3><ul><li><a href="#skills">Skills by area</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Experience</h3><ul><li><a href="#experience">Work and degrees</a></li><li><a href="https://linkedin.com/in/sauravsajesh" rel="noopener">LinkedIn</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>&copy; 2026 Saurav Sajesh</span>
+        <div class="socials"></div>
+        <span class="credits">Product names and logos are trademarks of their owners</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- the page's own modules first, so the explorer, the skills tabs and the history rows are in the page
+     before system.js binds its tabs; then the kit's three, as the starter has them -->
+<script type="module" src="js/app.js"></script>
+<script type="module" src="assets/system.js"></script>
+<script type="module" src="assets/motion/motion.js"></script>
+<script type="module" src="assets/layout/layout.js"></script>
+<script type="module" src="assets/diagrams/mount.js"></script>
+</body>
+</html>
