@@ -1,16 +1,21 @@
 /*
-  The hero's orbit canvas: three inclined orbits round the portrait, nodes drifting along them, thin links
-  between nodes that pass close to each other, and one signal running the middle orbit. Two 2D canvases, one
-  behind the portrait and one in front, so a node passes behind the head and in front of the chest.
+  The hero stage: a live halftone portrait with three orbits round it.
 
-  Light by construction: about twenty arcs and a dozen discs a frame, 30 frames a second, a pixel ratio of
-  1.5 at most, nothing drawn while the stage is off screen or the tab is hidden. Positions come from a clock
-  that starts at load, so the picture is the same whenever it is looked at. The pointer tilts the orbital
-  plane a few degrees and lights the nodes near it. Under reduced motion, on a phone and on touch screens it
-  draws one still frame and stops.
+  Three 2D canvases share the stage: the far half of the orbits, the portrait, the near half of the orbits,
+  so a node passes behind the head and in front of the chest.
+
+  The portrait is drawn as dots from media/avatar-frames.png: 36 greyscale tone frames (144px each, six to a
+  row) taken from a three-second Higgsfield clip of the photograph, in which the head turns a little and
+  comes back. The frames are played forwards and backwards, so the loop has no seam, and blended from one to
+  the next. Dots near the pointer brighten and grow. Until the frames have loaded, and wherever the canvases
+  are off, the still picture (media/avatar-still-*.webp) stands in their place.
+
+  Light by construction: about 8,000 dots in eight fills, twenty arcs and a dozen discs a frame, 30 frames a
+  second, a pixel ratio of 1.5 at most, nothing drawn while the stage is off screen or the tab is hidden.
+  Everything runs on one clock from load and stops on the stage's one pause button. Under reduced motion, on
+  a phone and on touch screens nothing runs: the still portrait and one still frame of the orbits.
 */
 const TAU = Math.PI * 2;
-const PAD = 0;                      // the canvases are the stage's own box (css/page.css)
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -22,7 +27,12 @@ const ORBITS = [
 ];
 const SIGNAL = { orbit: 1, lap: 18, tail: 0.11 };       // a pulse on the middle orbit, a ninth of a lap long
 const LINK = 0.15;                                      // nodes closer than this share of the width are linked
-const NEAR = 170;                                       // px: how far the pointer reaches
+const NEAR = 170;                                       // px: how far the pointer reaches the orbit's nodes
+
+const FRAMES = { src: 'media/avatar-frames.png', n: 36, size: 144, cols: 6, loop: 7 };   // loop: seconds there and back
+const GRID = 155;                                       // dots across the portrait
+const LENS = 96;                                        // px: how far the pointer lights the portrait
+const LEVELS = 8;                                       // tone steps, one fill each
 
 function palette() {
   const cs = getComputedStyle(document.documentElement);
@@ -43,33 +53,99 @@ function dust(n) {
   return Array.from({ length: n }, () => ({ x: rnd(), y: rnd(), r: 0.6 + rnd() * 1.0, a: 0.14 + rnd() * 0.26 }));
 }
 
+/* the portrait's tone frames: one Uint8Array, frame after frame */
+async function loadFrames() {
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = FRAMES.src;
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const { size, cols, n } = FRAMES, px = g.getImageData(0, 0, c.width, c.height).data, W = c.width;
+  const out = new Uint8Array(n * size * size);
+  for (let f = 0; f < n; f++) {
+    const ox = (f % cols) * size, oy = Math.floor(f / cols) * size;
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) out[f * size * size + y * size + x] = px[((oy + y) * W + ox + x) * 4];
+  }
+  return out;
+}
+
 export function mountOrbit(stage, { pauseButton } = {}) {
-  const back = stage.querySelector('.orbit--back'), front = stage.querySelector('.orbit--front');
+  const back = stage.querySelector('.orbit--back'), front = stage.querySelector('.orbit--front'), face = stage.querySelector('.portrait');
   if (!back || !front || !back.getContext) return null;
-  const bx = back.getContext('2d'), fx = front.getContext('2d');
+  const bx = back.getContext('2d'), fx = front.getContext('2d'), px = face ? face.getContext('2d') : null;
   const col = palette(), motes = dust(56);
   const fixed = matchMedia('(prefers-reduced-motion: reduce)').matches
     || matchMedia('(max-width: 639px)').matches || matchMedia('(pointer: coarse)').matches;
 
-  let W = 0, H = 0, dpr = 1;                             // the stage's box, css px
+  let W = 0, H = 0, S = 0, dpr = 1;                      // the stage's box and the portrait's square, css px
   let tiltX = 0, tiltY = 0, aimX = 0, aimY = 0;          // the pointer's pull on the plane, -1..1, eased
-  let ptr = null;                                        // the pointer in canvas px, or null
+  let ptr = null;                                        // the pointer in stage px, or null
   let visible = true, paused = false, raf = 0, last = 0, clock = 0, t0 = performance.now();
+  let tones = null, dots = null;                         // the frames, and the dot grid for the current size
+
+  // the portrait's dots: hex-packed, each with its place and the tone texel it reads
+  const layout = () => {
+    const p = S / GRID, rowH = p * 0.866, rows = Math.floor(S / rowH), T = FRAMES.size;
+    const n = GRID * rows, x = new Float32Array(n), y = new Float32Array(n), at = new Uint32Array(n);
+    let k = 0;
+    for (let j = 0; j < rows; j++) for (let i = 0; i < GRID; i++) {
+      const cx = i * p + p / 2 + (j % 2 ? p / 2 : 0), cy = j * rowH + p / 2;
+      if (cx >= S || cy >= S) continue;
+      x[k] = cx; y[k] = cy;
+      at[k] = Math.min(T - 1, Math.floor(cy / S * T)) * T + Math.min(T - 1, Math.floor(cx / S * T));
+      k++;
+    }
+    dots = { n: k, x, y, at, p, bx: Array.from({ length: LEVELS }, () => new Float32Array(k * 3)), bn: new Uint32Array(LEVELS) };
+  };
 
   const size = () => {
     const r = stage.getBoundingClientRect();
     // css/page.css turns the canvases off on a stage too narrow for the orbits: nothing to size or draw then
     if (!r.width || !r.height || getComputedStyle(back).display === 'none') return false;
-    W = r.width; H = r.height;
+    W = r.width; H = r.height; S = Math.min(W, H);
     dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    for (const c of [back, front]) {
-      c.width = Math.round((W + PAD * 2) * dpr);
-      c.height = Math.round((H + PAD * 2) * dpr);
-    }
+    for (const c of [back, front]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    if (face) { face.width = face.height = Math.round(S * dpr); layout(); }
     return true;
   };
 
-  /* a point on an orbit: its screen position, and z > 0 when it is on the viewer's side */
+  /* ------------------------------------------------------------ the portrait */
+  const drawFace = t => {
+    if (!px || !tones || !dots) return;
+    const { n, x, y, at, p, bx: buckets, bn } = dots, T2 = FRAMES.size * FRAMES.size;
+    // there and back: a triangle wave, eased at both ends
+    const ph = (t / FRAMES.loop) % 1, tri = 1 - Math.abs(2 * ph - 1), e = tri * tri * (3 - 2 * tri);
+    const fp = e * (FRAMES.n - 1), f0 = Math.floor(fp), f1 = Math.min(FRAMES.n - 1, f0 + 1), w = fp - f0;
+    const A = f0 * T2, B = f1 * T2;
+    const lx = ptr ? ptr.x - (W - S) / 2 : -1e4, ly = ptr ? ptr.y - (H - S) / 2 : -1e4, lens2 = LENS * LENS;
+    bn.fill(0);
+    for (let k = 0; k < n; k++) {
+      let tone = (tones[A + at[k]] * (1 - w) + tones[B + at[k]] * w) / 255;
+      if (tone < 0.055) continue;
+      const dx = x[k] - lx, dy = y[k] - ly, d2 = dx * dx + dy * dy;
+      let grow = 1;
+      if (d2 < lens2) { const q = 1 - Math.sqrt(d2) / LENS, b = q * q; tone = Math.min(1, tone * (1 + 0.55 * b)); grow = 1 + 0.22 * b; }
+      const lv = Math.min(LEVELS - 1, Math.floor(tone * LEVELS)), o = bn[lv] * 3, buf = buckets[lv];
+      buf[o] = x[k]; buf[o + 1] = y[k]; buf[o + 2] = (p * 0.5) * Math.min(0.98, 0.16 + 0.88 * tone) * grow;
+      bn[lv]++;
+    }
+    px.setTransform(dpr, 0, 0, dpr, 0, 0);
+    px.clearRect(0, 0, S, S);
+    for (let lv = 0; lv < LEVELS; lv++) {
+      const m = bn[lv]; if (!m) continue;
+      const tone = (lv + 0.5) / LEVELS, k = Math.pow(tone, 1.5), buf = buckets[lv];
+      px.fillStyle = `rgba(${Math.round(lerp(col.amber[0], col.ink[0], k))},${Math.round(lerp(col.amber[1], col.ink[1], k))},${Math.round(lerp(col.amber[2], col.ink[2], k))},${Math.min(1, 0.4 + 0.75 * tone).toFixed(3)})`;
+      px.beginPath();
+      for (let i = 0; i < m; i++) { const o = i * 3; px.moveTo(buf[o] + buf[o + 2], buf[o + 1]); px.arc(buf[o], buf[o + 1], buf[o + 2], 0, TAU); }
+      px.fill();
+    }
+  };
+
+  /* ------------------------------------------------------------ the orbits */
+  // a point on an orbit: its screen position, and z > 0 when it is on the viewer's side
   const at = (o, turn, cx, cy) => {
     const a = turn * TAU, R = o.r * W;
     const flat = clamp(o.flat + tiltY * 0.07, 0.12, 0.42);
@@ -77,7 +153,6 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     const x = Math.cos(a) * R, z = Math.sin(a), y = z * R * flat;
     return { x: cx + x * Math.cos(roll) - y * Math.sin(roll), y: cy + x * Math.sin(roll) + y * Math.cos(roll), z };
   };
-
   const arc = (ctx, o, from, to, cx, cy) => {              // an orbit's arc as a polyline, from..to in turns
     const steps = Math.max(8, Math.ceil(Math.abs(to - from) * 96));
     ctx.beginPath();
@@ -88,18 +163,18 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     ctx.stroke();
   };
 
-  const draw = t => {
-    const cx = PAD + W / 2, cy = PAD + H * 0.6;
-    for (const ctx of [bx, fx]) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W + PAD * 2, H + PAD * 2); ctx.lineCap = 'round'; }
+  const drawOrbits = t => {
+    const cx = W / 2, cy = H * 0.6;
+    for (const ctx of [bx, fx]) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H); ctx.lineCap = 'round'; }
 
-    // behind everything: one soft amber light behind the head, and the dust
-    // (an ellipse as wide as 0.46 of the stage and as tall as half of it, so it has faded out before the stage's edges)
+    // behind everything: one soft amber light behind the portrait (an ellipse that has faded out before the
+    // stage's edges), and the dust
     const gx = Math.min(W * 0.46, H * 1.15), gy = H * 0.5;
-    bx.save(); bx.translate(cx, PAD + H * 0.5); bx.scale(1, gy / gx);
+    bx.save(); bx.translate(cx, H * 0.5); bx.scale(1, gy / gx);
     const g = bx.createRadialGradient(0, 0, 0, 0, 0, gx);
     g.addColorStop(0, rgba(col.amber, 0.13)); g.addColorStop(0.5, rgba(col.amber, 0.055)); g.addColorStop(1, rgba(col.amber, 0));
     bx.fillStyle = g; bx.beginPath(); bx.arc(0, 0, gx, 0, TAU); bx.fill(); bx.restore();
-    for (const m of motes) { bx.fillStyle = rgba(col.ink, m.a); bx.beginPath(); bx.arc(PAD + m.x * W + tiltX * 4 * m.r, PAD + m.y * H + tiltY * 3 * m.r, m.r, 0, TAU); bx.fill(); }
+    for (const m of motes) { bx.fillStyle = rgba(col.ink, m.a); bx.beginPath(); bx.arc(m.x * W + tiltX * 4 * m.r, m.y * H + tiltY * 3 * m.r, m.r, 0, TAU); bx.fill(); }
 
     // the orbits: the far half behind the portrait, the near half in front of it
     ORBITS.forEach(o => {
@@ -149,6 +224,8 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     }
   };
 
+  const draw = t => { drawOrbits(t + 14); drawFace(t); };
+
   const frame = now => {
     raf = 0;
     if (!visible || paused || document.hidden || back.offsetParent === null) return;
@@ -157,15 +234,18 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     last = now;
     clock = (now - t0) / 1000;
     tiltX = lerp(tiltX, aimX, 0.06); tiltY = lerp(tiltY, aimY, 0.06);
-    draw(clock + 14);
+    draw(clock);
   };
   const run = () => { if (!fixed && !raf && visible && !paused && !document.hidden && W) raf = requestAnimationFrame(frame); };
-  const still = () => draw((fixed ? 0 : clock) + 14);
+  const still = () => draw(fixed ? 0 : clock);
 
   if (size()) still();
   new ResizeObserver(() => { if (size()) { still(); run(); } }).observe(stage);
 
   if (!fixed) {
+    // the live portrait takes over from the still picture once its frames are in
+    if (px) loadFrames().then(a => { tones = a; stage.classList.add('is-live'); still(); }).catch(() => {});
+
     new IntersectionObserver(es => { visible = es[es.length - 1].isIntersecting; if (visible) run(); }, { rootMargin: '80px' }).observe(stage);
     document.addEventListener('visibilitychange', run);
 
@@ -179,7 +259,7 @@ export function mountOrbit(stage, { pauseButton } = {}) {
       if (stale) { box = stage.getBoundingClientRect(); stale = false; }
       const x = e.clientX - box.left, y = e.clientY - box.top;
       const inside = x > -120 && x < box.width + 120 && y > -160 && y < box.height + 80;
-      ptr = inside ? { x: x + PAD, y: y + PAD } : null;
+      ptr = inside ? { x, y } : null;
       aimX = inside ? clamp((x / box.width - 0.5) * 2, -1, 1) : 0;
       aimY = inside ? clamp((y / box.height - 0.5) * 2, -1, 1) : 0;
       if (paused) { tiltX = aimX; tiltY = aimY; still(); }
@@ -191,7 +271,7 @@ export function mountOrbit(stage, { pauseButton } = {}) {
         paused = !paused;
         if (paused) { cancelAnimationFrame(raf); raf = 0; } else { t0 = performance.now() - clock * 1000; run(); }
         return paused;
-      }, 'the orbit animation'));
+      }, 'the portrait and orbit animation'));
     }
     run();
   }

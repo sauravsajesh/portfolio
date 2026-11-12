@@ -76,8 +76,9 @@
 </header>
 
 <main id="top">
-  <!-- HERO (product stage): the head row, then the portrait on the page ground with the orbit canvas round it.
-       The portrait is a still picture; the two canvases draw the orbits behind and in front of it (js/orbit.js). -->
+  <!-- HERO (product stage): the head row, then the portrait on the page ground with the orbits round it.
+       The picture is the portrait's still; from 640px with a mouse, js/orbit.js draws the portrait live on the
+       middle canvas (frames from a Higgsfield clip of the photograph) and the orbits behind and in front of it. -->
   <section class="hero hero--product" data-enter aria-labelledby="hero-h">
     <div class="wrap"><div class="hero-text hero__in">
       <div class="hero__head">
@@ -92,7 +93,8 @@
       </div>
       <div class="hero__stage" data-orbit>
         <canvas class="orbit orbit--back" aria-hidden="true"></canvas>
-        <img class="is-cutout" src="media/avatar-620.webp" srcset="media/avatar-620.webp 620w, media/avatar-1240.webp 1240w" sizes="(max-width: 639px) 86vw, 566px" width="620" height="620" alt="Portrait of Saurav Sajesh drawn in amber halftone dots: glasses, a short beard and a light shirt" fetchpriority="high" data-source="client" data-subject="portrait">
+        <img class="is-cutout" src="media/avatar-still-620.webp" srcset="media/avatar-still-620.webp 620w, media/avatar-still-1240.webp 1240w" sizes="(max-width: 639px) 86vw, 566px" width="620" height="620" alt="Portrait of Saurav Sajesh drawn in amber halftone dots: glasses, a short beard and a light shirt" fetchpriority="high" data-source="client" data-subject="portrait">
+        <canvas class="portrait" role="img" aria-label="Portrait of Saurav Sajesh drawn in amber halftone dots: glasses, a short beard and a light shirt"></canvas>
         <canvas class="orbit orbit--front" aria-hidden="true"></canvas>
       </div>
     </div></div>

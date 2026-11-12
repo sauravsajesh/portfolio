@@ -201,7 +201,39 @@ function renderHistory() {
     + `<li><span class="rows__name">Languages</span><p>${esc(languages)}</p></li>`;
 }
 
-/* ------------------------------------------------------------------ media slots: a still, or a muted loop */
+/* ------------------------------------------------------------------ media slots: a still, a reel, or a muted loop */
+const ICON_PLAY_SMALL = ICON_PLAY, ICON_PAUSE_SMALL = ICON_PAUSE;
+function mountReels() {
+  if (reduced()) return;                                                    // the poster stands
+  const hover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  for (const p of projects) {
+    const reel = p.media && p.media.reel, fig = reel && $(`[data-slot="${p.id}"]`);
+    if (!fig) continue;
+    const strip = document.createElement('span');
+    strip.className = 'slot__reel';
+    strip.style.setProperty('--frames', reel.frames);
+    strip.style.setProperty('--reel-time', `${reel.frames * reel.ms}ms`);
+    fig.append(strip);
+    let held = false, loaded = false;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'loop-pause slot__play';
+    const set = on => {
+      if (on && !loaded) { strip.style.backgroundImage = `url(${reel.src})`; loaded = true; }   // fetched on first play
+      fig.classList.toggle('is-playing', on);
+      btn.innerHTML = on ? ICON_PAUSE_SMALL : ICON_PLAY_SMALL;
+      btn.setAttribute('aria-label', `${on ? 'Pause' : 'Play'} the clip`);
+    };
+    btn.addEventListener('click', () => { held = !fig.classList.contains('is-playing'); set(held); });
+    if (hover) {
+      fig.addEventListener('pointerenter', () => set(true));
+      fig.addEventListener('pointerleave', () => { if (!held) set(false); });
+    }
+    set(false);
+    fig.append(btn);
+  }
+}
+
 function mountSlots() {
   if (reduced() || matchMedia('(max-width: 639px)').matches) return;       // the poster stands
   for (const p of projects) {
@@ -294,6 +326,7 @@ renderSkills();
 renderHistory();
 jumps(explorer);
 magnets();
+mountReels();
 mountSlots();
 const stage = $('[data-orbit]');
 if (stage) mountOrbit(stage, { pauseButton });

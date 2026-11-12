@@ -18,11 +18,19 @@
   width: min(100cqw, 100cqh); height: min(100cqw, 100cqh);
 }
 .hero__stage > canvas.orbit { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; pointer-events: none; display: block; }
+/* the live portrait: the same square as the still, shown in its place once its frames have loaded (.is-live) */
+.hero__stage > canvas.portrait {
+  position: absolute; inset: 0; margin: auto; z-index: 1; display: none; pointer-events: none;
+  width: min(100cqw, 100cqh); height: min(100cqw, 100cqh);
+}
+.hero__stage.is-live > canvas.portrait { display: block; }
+.hero__stage.is-live > img.is-cutout { display: none; }
 .hero__stage > .orbit--back { z-index: 0; }
 .hero__stage > .orbit--front { z-index: 2; }
 .hero__stage > .loop-pause { right: 0; bottom: 4px; }
 @container (max-aspect-ratio: 3 / 2) {
-  .hero__stage > canvas.orbit, .hero__stage > .loop-pause { display: none; }
+  .hero__stage > canvas.orbit, .hero__stage > canvas.portrait, .hero__stage.is-live > canvas.portrait, .hero__stage > .loop-pause { display: none; }
+  .hero__stage.is-live > img.is-cutout { display: block; }
 }
 
 /* magnetic pull on the primary actions: the wrapper moves, the button keeps the kit's own hover and press */
@@ -109,6 +117,16 @@
 .slot > video { opacity: 0; transition: opacity 400ms var(--ease); }
 .slot.is-playing > video { opacity: 1; }
 .slot > .loop-pause { right: 8px; bottom: 8px; width: 28px; height: 28px; }
+/* a reel: one strip of frames stepped across the frame, running only while .is-playing */
+.slot > .slot__reel {
+  position: absolute; inset: 0 auto 0 0; width: calc(var(--frames) * 100%); opacity: 0;
+  background-size: 100% 100%; background-repeat: no-repeat;
+  animation: slot-reel var(--reel-time) steps(var(--frames)) infinite paused;
+  transition: opacity 240ms var(--ease);
+}
+.slot.is-playing > .slot__reel { opacity: 1; animation-play-state: running; }
+@keyframes slot-reel { to { transform: translate3d(-100%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .slot > .slot__reel, .slot > .slot__play { display: none; } }
 
 .px__stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; counter-reset: stage; }
 .px__stage { position: relative; padding-top: 28px; counter-increment: stage; }

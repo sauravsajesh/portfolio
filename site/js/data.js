@@ -8,6 +8,9 @@
   MEDIA SLOTS (Higgsfield or Fable renders). Each project has a `media` entry:
       poster  a still that always shows (required), 16:10; the seven in site/media were generated with Higgsfield
       thumb   the same picture as a 96px square for the project list
+      reel    a short loop as one strip of frames, e.g. { src: 'media/coral-reel.webp', frames: 16, ms: 110 }
+              (optional; made from a Higgsfield GIF with tools/make_reel.py). It plays while the pointer rests
+              on the picture, or from the play button on it, and is fetched only then.
       video   a short muted loop, e.g. "media/thesis.mp4" (optional). Add the file to site/media and put
               its path here; the frame then plays it while its project is open, with a pause button,
               and keeps the poster on phones and under reduced motion.
@@ -56,7 +59,7 @@ export const projects = [
       { value: '> 0.91', label: 'Robustness metric' },
     ],
     links: [],
-    media: { poster: 'media/thesis.webp', thumb: 'media/thesis-thumb.webp', video: '', alt: 'A steel ball bearing on dark slate, a small vibration sensor cabled to its outer ring' },
+    media: { poster: 'media/thesis.webp', thumb: 'media/thesis-thumb.webp', reel: { src: 'media/thesis-reel.webp', frames: 16, ms: 110 }, video: '', alt: 'A steel ball bearing on dark slate, a small vibration sensor cabled to its outer ring' },
   },
   {
     id: 'aersut',
@@ -105,7 +108,7 @@ export const projects = [
     ],
     figures: [{ value: '12', label: 'Servo motors driven by the STM32' }],
     links: [{ label: 'Read the article in IJRESM', href: 'https://journal.ijresm.com/index.php/ijresm/article/view/2656' }],
-    media: { poster: 'media/rescue.webp', thumb: 'media/rescue-thumb.webp', video: '', alt: 'A LiDAR point cloud of a collapsed room, a thin blue search path winding through the rubble' },
+    media: { poster: 'media/rescue.webp', thumb: 'media/rescue-thumb.webp', reel: { src: 'media/rescue-reel.webp', frames: 16, ms: 110 }, video: '', alt: 'A LiDAR point cloud of a collapsed room, a thin blue search path winding through the rubble' },
   },
   {
     id: 'energy',
@@ -179,7 +182,7 @@ export const projects = [
     ],
     figures: [],
     links: [],
-    media: { poster: 'media/coral.webp', thumb: 'media/coral-thumb.webp', video: '', alt: 'The pen tip of a pen plotter drawing continuous lines on paper' },
+    media: { poster: 'media/coral.webp', thumb: 'media/coral-thumb.webp', reel: { src: 'media/coral-reel.webp', frames: 16, ms: 110 }, video: '', alt: 'The pen tip of a pen plotter drawing continuous lines on paper' },
   },
   {
     id: 'translator',
@@ -205,7 +208,7 @@ export const projects = [
       { value: '18', label: 'Training epochs' },
     ],
     links: [],
-    media: { poster: 'media/translator.webp', thumb: 'media/translator-thumb.webp', video: '', alt: 'Two rows of glass tiles joined by glowing threads, a few of them brighter than the rest' },
+    media: { poster: 'media/translator.webp', thumb: 'media/translator-thumb.webp', reel: { src: 'media/translator-reel.webp', frames: 16, ms: 110 }, video: '', alt: 'Two rows of glass tiles joined by glowing threads, a few of them brighter than the rest' },
   },
 ];
 
