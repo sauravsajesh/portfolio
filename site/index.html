@@ -15,9 +15,9 @@
 <!-- canonical: add the link rel="canonical" line here once the site has its own domain -->
 <meta name="site-kind" content="software">
 <meta name="page-type" content="software">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..500&display=swap" rel="stylesheet">
+<!-- Geist and Geist Mono, the dealt pairing, served from this site (css/fonts.css): no third-party font request -->
+<link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="assets/system.css">
 <link rel="stylesheet" href="assets/ui/cards.css">
 <link rel="stylesheet" href="assets/motion/motion.css">
@@ -103,13 +103,13 @@
   <section class="section" id="projects" aria-labelledby="projects-h">
     <div class="wrap">
       <div class="grid px-head">
-        <h2 class="span-5" id="projects-h">A thesis, two papers and four builds</h2>
+        <h2 class="span-5" id="projects-h">Embedded AI projects and papers</h2>
         <div class="span-6 start-7 px-head__text">
-          <p>Pick a project on the left. The right side gives its summary, the architecture step by step, then the stack and the measured results.</p>
+          <p>Pick a project to open its summary, its architecture step by step, and its stack with the measured results.</p>
           <a class="link" href="https://github.com/sauravsajesh/energy-forecasting-mlops" rel="noopener">See the code on GitHub</a>
         </div>
       </div>
-      <div class="ui px fill" id="explorer" data-px>
+      <div class="ui ui-panel px fill" id="explorer" data-px>
         <div class="px__pane px__pane--list">
           <div class="px__bar">
             <span class="px__bar-title">Work</span>
@@ -145,55 +145,51 @@
     </div>
   </section>
 
-  <!-- SKILLS (tabs-tour): four competencies, one at a time; each skill names the projects it was used in -->
-  <section class="section" id="skills" aria-labelledby="skills-h">
-    <div class="wrap">
-      <div class="grid grid--top fill sk">
-        <div class="span-5 sk__text">
-          <div class="section-head">
-            <h2 id="skills-h">Skills, each with the project behind it</h2>
-          </div>
-          <div class="tabs" role="tablist" aria-label="Skills by area" data-sk-tabs></div>
-          <div class="sk__panels" data-sk-panels></div>
+  <!-- SKILLS (tabs-tour): four competencies, one at a time; each skill names the projects it was used in.
+       Two screens on a phone (g2m): the words and tabs, then the window. -->
+  <section class="section g2m" id="skills" aria-labelledby="skills-h">
+    <div class="wrap grid grid--top sk">
+      <div class="span-5 sk__text">
+        <div class="section-head">
+          <h2 id="skills-h">Skills in 4 areas, each tied to a project</h2>
         </div>
-        <div class="span-6 start-7 sk__frame" data-sk-screens></div>
+        <div class="sk__tabs" role="tablist" aria-label="Skills by area" data-sk-tabs></div>
+        <div class="sk__panels" data-sk-panels></div>
       </div>
+      <div class="span-6 start-7 sk__frame" data-sk-screens></div>
     </div>
   </section>
 
-  <!-- EXPERIENCE: the history as ruled rows, beside one diagram of what goes in and where it runs -->
-  <section class="section" id="experience" aria-labelledby="experience-h">
-    <div class="wrap">
-      <div class="grid grid--top fill xp">
-        <div class="span-5 xp__text">
-          <div class="section-head">
-            <h2 id="experience-h">Experience and education</h2>
-          </div>
-          <ul class="rows xp__rows" data-xp-rows></ul>
+  <!-- EXPERIENCE: the history as ruled rows, beside one diagram of what goes in and where it runs.
+       From 1024px the heading and the rows share the left column and the diagram runs beside both; on a phone
+       it is two screens (g2m): the heading with the diagram, then the rows. -->
+  <section class="section g2m" id="experience" aria-labelledby="experience-h">
+    <div class="wrap grid grid--top xp">
+      <div class="xp__lead">
+        <div class="section-head xp__head">
+          <h2 id="experience-h">Experience and education since 2019</h2>
         </div>
-        <div class="span-6 start-7 xp__side">
-          <div class="frame xp__frame">
-            <div class="dg" data-diagram><script type="application/json">{
-              "layout": "bowtie",
-              "alt": "Vibration, speech, LiDAR and camera data go into one model, which is deployed to a Cortex-M4, an Edge TPU, a Raspberry Pi and Azure.",
-              "sources": [
-                { "label": "Vibration", "icon": "ui:activity", "sub": "Bearings" },
-                { "label": "Speech", "icon": "ui:audio-lines", "sub": "8 emotions" },
-                { "label": "LiDAR", "icon": "ui:radar", "sub": "SLAM" },
-                { "label": "Camera", "icon": "ui:scan-eye", "sub": "OpenCV" }
-              ],
-              "core": { "label": "Model", "icon": "ui:brain" },
-              "targets": [
-                { "label": "Cortex-M4", "icon": "ui:microchip", "sub": "ASH-HI" },
-                { "label": "Edge TPU", "icon": "ui:cpu", "sub": "MobileNet V2" },
-                { "label": "Raspberry Pi", "icon": "raspberry-pi", "sub": "ROS, SLAM" },
-                { "label": "Azure", "icon": "azure", "sub": "LSTM API" }
-              ]
-            }</script></div>
-          </div>
-          <div class="xp__extra" data-xp-extra></div>
+        <div class="frame xp__frame">
+          <div class="dg" data-diagram><script type="application/json">{
+            "layout": "bowtie",
+            "alt": "Vibration, speech, LiDAR and camera data go into one model, which is deployed to a Cortex-M4, an Edge TPU, a Raspberry Pi and Azure.",
+            "sources": [
+              { "label": "Vibration", "icon": "ui:activity", "sub": "Bearings" },
+              { "label": "Speech", "icon": "ui:audio-lines", "sub": "8 emotions" },
+              { "label": "LiDAR", "icon": "ui:radar", "sub": "SLAM" },
+              { "label": "Camera", "icon": "ui:scan-eye", "sub": "OpenCV" }
+            ],
+            "core": { "label": "Model", "icon": "ui:brain" },
+            "targets": [
+              { "label": "Cortex-M4", "icon": "ui:microchip", "sub": "ASH-HI" },
+              { "label": "Edge TPU", "icon": "ui:cpu", "sub": "MobileNet V2" },
+              { "label": "Raspberry Pi", "icon": "raspberry-pi", "sub": "ROS, SLAM" },
+              { "label": "Azure", "icon": "azure", "sub": "LSTM API" }
+            ]
+          }</script></div>
         </div>
       </div>
+      <ul class="rows xp__rows" data-xp-rows></ul>
     </div>
   </section>
 </main>
@@ -210,17 +206,15 @@
     <div class="closing__links">
       <div class="grid">
         <div class="span-4 stack-4">
-          <a class="nav__logo" href="#top"><span class="mark mark--initial" aria-hidden="true">S</span>Saurav Sajesh</a>
           <p class="footer__lede">Embedded AI engineer in Ilmenau, Germany.</p>
         </div>
-        <div class="span-2 footer__col"><h3>Projects</h3><ul><li><a href="#projects?p=thesis">Master's thesis</a></li><li><a href="#projects?p=aersut">Two papers</a></li><li><a href="#projects?p=energy">Four builds</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Projects</h3><ul><li><a href="#project-thesis">Thesis and papers</a></li><li><a href="#project-energy">Four builds</a></li></ul></div>
         <div class="span-2 footer__col"><h3>Approach</h3><ul><li><a href="#approach">How I work</a></li></ul></div>
         <div class="span-2 footer__col"><h3>Skills</h3><ul><li><a href="#skills">Skills by area</a></li></ul></div>
         <div class="span-2 footer__col"><h3>Experience</h3><ul><li><a href="#experience">Work and degrees</a></li><li><a href="https://linkedin.com/in/sauravsajesh" rel="noopener">LinkedIn</a></li></ul></div>
       </div>
       <div class="footer__legal">
         <span>&copy; 2026 Saurav Sajesh</span>
-        <div class="socials"></div>
         <span class="credits">Product names and logos are trademarks of their owners</span>
       </div>
     </div>

@@ -6,7 +6,8 @@
   date, name and link is one of theirs.
 
   MEDIA SLOTS (Higgsfield or Fable renders). Each project has a `media` entry:
-      poster  a still that always shows (required)
+      poster  a still that always shows (required), 16:10; the seven in site/media were generated with Higgsfield
+      thumb   the same picture as a 96px square for the project list
       video   a short muted loop, e.g. "media/thesis.mp4" (optional). Add the file to site/media and put
               its path here; the frame then plays it while its project is open, with a pause button,
               and keeps the poster on phones and under reduced motion.
@@ -27,12 +28,13 @@ export const areas = [
   { id: 'embedded-ai', label: 'Embedded AI' },
   { id: 'ml-pipelines', label: 'ML pipelines' },
   { id: 'firmware', label: 'Firmware' },
-  { id: 'software', label: 'Software engineering' },
+  { id: 'software', label: 'Software engineering', short: 'Software' },
 ];
 
 export const projects = [
   {
     id: 'thesis',
+    tag: 'Thesis',
     kind: 'Master’s thesis',
     short: 'Degradation trends on a Cortex-M4',
     title: 'Unsupervised degradation trend estimation for machinery parts in industrial scenarios for energy-constrained applications',
@@ -54,10 +56,11 @@ export const projects = [
       { value: '> 0.91', label: 'Robustness metric' },
     ],
     links: [],
-    media: { poster: 'media/thesis.webp', video: '', alt: 'Vibration spectra stacked over time, one ridge rising as a bearing wears' },
+    media: { poster: 'media/thesis.webp', thumb: 'media/thesis-thumb.webp', video: '', alt: 'A steel ball bearing on dark slate, a small vibration sensor cabled to its outer ring' },
   },
   {
     id: 'aersut',
+    tag: 'Emotion paper',
     kind: 'Paper',
     short: 'Emotion recognition from speech',
     title: 'Automatic Emotion Recognition System using tinyML (AERSUT)',
@@ -79,10 +82,11 @@ export const projects = [
       { value: '96%', label: 'CNN-LSTM training accuracy' },
     ],
     links: [{ label: 'Read the paper on IEEE Xplore', href: 'https://ieeexplore.ieee.org/document/10094330' }],
-    media: { poster: 'media/aersut.webp', video: '', alt: 'A Mel spectrogram of speech, bright bands where the voice carries energy' },
+    media: { poster: 'media/aersut.webp', thumb: 'media/aersut-thumb.webp', video: '', alt: 'A MEMS microphone on a small black microcontroller board, lit from the side' },
   },
   {
     id: 'rescue',
+    tag: 'Rescue robot',
     kind: 'Paper',
     short: 'Quadruped rescue robot with SLAM',
     title: 'Rescue Robot using Backtracking Algorithm and SLAM Algorithm',
@@ -101,10 +105,11 @@ export const projects = [
     ],
     figures: [{ value: '12', label: 'Servo motors driven by the STM32' }],
     links: [{ label: 'Read the article in IJRESM', href: 'https://journal.ijresm.com/index.php/ijresm/article/view/2656' }],
-    media: { poster: 'media/rescue.webp', video: '', alt: 'A LiDAR point cloud of a room, with the path a robot has searched' },
+    media: { poster: 'media/rescue.webp', thumb: 'media/rescue-thumb.webp', video: '', alt: 'A LiDAR point cloud of a collapsed room, a thin blue search path winding through the rubble' },
   },
   {
     id: 'energy',
+    tag: 'Energy pipeline',
     kind: 'Project',
     short: 'Energy load forecasting on Azure',
     title: 'Industrial Energy Forecasting: Edge-Cloud MLOps Pipeline',
@@ -127,10 +132,11 @@ export const projects = [
       { value: '1,722 MW', label: 'Mean absolute error' },
     ],
     links: [{ label: 'See the code on GitHub', href: 'https://github.com/sauravsajesh/energy-forecasting-mlops' }],
-    media: { poster: 'media/energy.webp', video: '', alt: 'A week of hourly grid load drawn as seven stacked daily curves' },
+    media: { poster: 'media/energy.webp', thumb: 'media/energy-thumb.webp', video: '', alt: 'High-voltage pylons in silhouette at blue hour, an amber band of light on the horizon' },
   },
   {
     id: 'amr',
+    tag: 'ROS robot',
     kind: 'Project',
     short: 'Autonomous mobile robot in ROS',
     title: 'Autonomous Mobile Robot with Obstacle Tracking',
@@ -149,10 +155,11 @@ export const projects = [
     ],
     figures: [],
     links: [],
-    media: { poster: 'media/amr.webp', video: '', alt: 'An occupancy grid map with walls, free space and a planned route through it' },
+    media: { poster: 'media/amr.webp', thumb: 'media/amr-thumb.webp', video: '', alt: 'A LiDAR sensor seen from above inside an occupancy grid map, a planned route drawn in blue' },
   },
   {
     id: 'coral',
+    tag: 'Coral plotter',
     kind: 'Project',
     short: 'Image to line drawing on Google Coral',
     title: 'Embedded Platform for Image to Line Drawing using Google Coral',
@@ -172,10 +179,11 @@ export const projects = [
     ],
     figures: [],
     links: [],
-    media: { poster: 'media/coral.webp', video: '', alt: 'Pen-plotter line art: the outlines of a still life drawn in single strokes' },
+    media: { poster: 'media/coral.webp', thumb: 'media/coral-thumb.webp', video: '', alt: 'The pen tip of a pen plotter drawing continuous lines on paper' },
   },
   {
     id: 'translator',
+    tag: 'Translator',
     kind: 'Project',
     short: 'German to English Transformer',
     title: 'Language Translator (Deutsch to English)',
@@ -197,7 +205,7 @@ export const projects = [
       { value: '18', label: 'Training epochs' },
     ],
     links: [],
-    media: { poster: 'media/translator.webp', video: '', alt: 'An attention map between German and English tokens, brightest along the diagonal' },
+    media: { poster: 'media/translator.webp', thumb: 'media/translator-thumb.webp', video: '', alt: 'Two rows of glass tiles joined by glowing threads, a few of them brighter than the rest' },
   },
 ];
 
@@ -220,6 +228,7 @@ export const skills = [
     area: 'ml-pipelines',
     lead: 'From raw data to a served model: about 70,000 hourly grid samples into an LSTM, packed in Docker and deployed on Azure by GitHub Actions. PyTorch for the Transformer, TensorFlow for the rest.',
     link: { label: 'See the energy pipeline', project: 'energy' },
+    cert: { label: 'ML in Production certificate, DeepLearning.AI', href: 'https://coursera.org/share/ce98cf0fdda790de8baa3b7361c95864' },
     items: [
       { name: 'TensorFlow and Keras', icon: 'tensorflow', used: ['energy'] },
       { name: 'PyTorch', icon: 'pytorch', used: ['translator'] },
@@ -233,6 +242,7 @@ export const skills = [
     area: 'firmware',
     lead: 'Work close to the hardware: an STM32 Nucleo-64 driving 12 servo motors, Python and C acquisition scripts at IMMS, and LiDAR, camera and IMU fused under ROS Noetic.',
     link: { label: 'See the rescue robot', project: 'rescue' },
+    cert: { label: 'Embedded Architecture certificate, CU Boulder', href: 'https://coursera.org/verify/BYVV2EXOWV9H' },
     items: [
       { name: 'C and C++', icon: 'c-plusplus', used: ['IMMS'] },
       { name: 'STM32', glyph: 'microchip', used: ['rescue', 'thesis'] },
@@ -262,7 +272,7 @@ export const history = [
     role: 'Master thesis researcher',
     org: 'IMMS, Ilmenau',
     dates: '11/2025 – 06/2026',
-    text: 'Built ASH-HI, a health indicator for bearings that runs on a Cortex-M4, and tested it on the PRONOSTIA and NASA IMS benchmarks.',
+    text: 'Built ASH-HI, a bearing health indicator for a Cortex-M4, tested on PRONOSTIA and NASA IMS data.',
   },
   {
     role: 'HiWi student researcher',
@@ -274,23 +284,14 @@ export const history = [
     role: 'M.Eng. AI for Smart Sensors and Actuators',
     org: 'Deggendorf Institute of Technology',
     dates: '10/2023 – 07/2026',
-    text: 'Final grade 2.5, thesis 1.9. Applied machine learning, intelligent systems and embedded control.',
+    text: 'Final grade 2.5, thesis 1.9.',
   },
   {
     role: 'B.Tech. Electronics and Communication Engineering',
     org: 'Model Engineering College, Kochi',
     dates: '06/2019 – 07/2023',
-    text: 'German-equivalent grade 2.33. Machine learning, signal processing, microcontrollers and computer architecture.',
+    text: 'German-equivalent grade 2.33.',
   },
 ];
 
-export const certificates = [
-  { name: 'Embedded Architecture', by: 'CU Boulder', href: 'https://coursera.org/verify/BYVV2EXOWV9H' },
-  { name: 'ML in Production', by: 'DeepLearning.AI', href: 'https://coursera.org/share/ce98cf0fdda790de8baa3b7361c95864' },
-];
-
-export const languages = [
-  { name: 'English', level: 'Full professional, IELTS 7.5' },
-  { name: 'German', level: 'A2, working towards B1' },
-  { name: 'Hindi and Malayalam', level: 'Native' },
-];
+export const languages = 'English, full professional (IELTS 7.5). German A2, working towards B1. Hindi and Malayalam, native.';
