@@ -11,7 +11,7 @@
   only declares role="tablist", role="tab" and aria-controls. Inside the two windows text sits in div and
   span, as in every kit fragment.
 */
-import { areas, projects, skills, history, languages } from './data.js';
+import { areas, projects, skills, history as timeline, languages } from './data.js';
 import { mountOrbit } from './orbit.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -19,6 +19,7 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const narrow = () => matchMedia('(max-width: 1023px)').matches;
+const phone = () => matchMedia('(max-width: 639px)').matches;
 const hide = i => (i ? ' hidden' : '');
 
 const byId = Object.fromEntries(projects.map(p => [p.id, p]));
@@ -140,23 +141,39 @@ function renderExplorer() {
     next.focus();
   }, true);
 
-  // under 1024px the open project slides over the list, inside the window
-  const back = $('[data-px-back]', root);
-  const slide = on => {
+  // from 640 to 1023px the open project slides over the list, inside the window. On a phone it opens as a
+  // full-screen sheet with its own scroll: it adds a history entry, so the phone's back gesture closes it, and
+  // the page under it stays where it was.
+  const back = $('[data-px-back]', root), pane = $('[data-px-open]', root), body = $('.px__body', root);
+  const html = document.documentElement;
+  let pushed = false;
+  const slide = (on, fromHistory = false, row = selected()) => {
+    const sheet = phone();
+    if (!on && !fromHistory && pushed) { history.back(); return; }   // popstate below closes it
+    if (!on) pushed = false;
     root.classList.toggle('is-open', on);
+    html.classList.toggle('px-sheet-open', on && sheet);
+    if (on && sheet) { pane.setAttribute('role', 'dialog'); pane.setAttribute('aria-modal', 'true'); pane.setAttribute('aria-label', row?.querySelector('.px__row-title')?.textContent || 'Project'); body.scrollTop = 0; }
+    else { pane.removeAttribute('role'); pane.removeAttribute('aria-modal'); pane.removeAttribute('aria-label'); }
+    if (on && sheet && !fromHistory && !pushed) { history.pushState({ pxSheet: true }, '', `#project-${row.dataset.id}`); pushed = true; }
+    if (!on && sheet && /^#project-/.test(location.hash)) history.replaceState(null, '', '#projects');
     if (!narrow()) return;
     if (on) back.focus({ preventScroll: true }); else selected()?.focus({ preventScroll: true });
   };
-  rowEls.forEach(r => r.addEventListener('click', e => { if (e.isTrusted && narrow()) slide(true); }));
+  rowEls.forEach(r => r.addEventListener('click', e => { if (e.isTrusted && narrow()) slide(true, false, r); }));
   back.addEventListener('click', () => slide(false));
   root.addEventListener('keydown', e => { if (e.key === 'Escape' && root.classList.contains('is-open') && narrow()) slide(false); });
+  addEventListener('popstate', e => { if (root.classList.contains('is-open') && phone() && !(e.state && e.state.pxSheet)) slide(false, true); });
+  // a phone turned sideways past 640px leaves sheet mode: the window takes the project back
+  matchMedia('(max-width: 639px)').addEventListener('change', e => { if (!e.matches) html.classList.remove('px-sheet-open'); else if (root.classList.contains('is-open')) html.classList.add('px-sheet-open'); });
 
-  const open = id => {
+  // fromHistory: the address already names the project (a deep link, back or forward), so add no entry
+  const open = (id, fromHistory = false) => {
     const row = byId[id] && document.getElementById(`project-${id}`);
     if (!row) return false;
     if (row.hidden) filter('all');
     row.click();
-    if (narrow()) root.classList.add('is-open');
+    if (narrow()) { if (phone()) slide(true, fromHistory, row); else root.classList.add('is-open'); }
     return true;
   };
   return { open };
@@ -196,7 +213,7 @@ function renderSkills() {
 /* ------------------------------------------------------------------ experience: the history as ruled rows */
 function renderHistory() {
   const rows = $('[data-xp-rows]');
-  if (rows) rows.innerHTML = history.map(h => `
+  if (rows) rows.innerHTML = timeline.map(h => `
     <li><span class="rows__name">${esc(h.role)}</span><span class="rows__value">${esc(h.dates)}</span><p><span class="xp__org">${esc(h.org)}</span>${esc(h.text)}</p></li>`).join('')
     + `<li><span class="rows__name">Languages</span><p>${esc(languages)}</p></li>`;
 }
@@ -301,8 +318,11 @@ function jumps(explorer) {
     clearTimeout(timer);
     timer = setTimeout(() => { html.style.scrollBehavior = ''; }, 1000);
   };
-  const toProject = id => {
-    if (!explorer || !explorer.open(id)) return false;
+  // on a phone a project opens as a sheet over the page, so the page stays where the link was
+  const toProject = (id, fromHistory = false) => {
+    if (!explorer) return false;
+    if (phone()) return explorer.open(id, fromHistory);
+    if (!explorer.open(id)) return false;
     smooth();
     document.getElementById('projects').scrollIntoView({ block: 'start' });
     return true;
@@ -313,9 +333,10 @@ function jumps(explorer) {
     const hash = a.getAttribute('href'), m = PROJECT.exec(hash);
     if (!m) { if (hash.length > 1 && document.getElementById(hash.slice(1))) smooth(); return; }
     e.preventDefault();
+    if (phone()) { toProject(m[1]); return; }                  // the sheet adds its own history entry
     if (toProject(m[1]) && hash !== location.hash) history.pushState(null, '', hash);
   });
-  const fromAddress = () => { const m = PROJECT.exec(location.hash); if (m) toProject(m[1]); };
+  const fromAddress = () => { const m = PROJECT.exec(location.hash); if (m) toProject(m[1], true); };
   addEventListener('popstate', fromAddress);
   addEventListener('hashchange', fromAddress);
   if (PROJECT.test(location.hash)) addEventListener('load', fromAddress, { once: true });

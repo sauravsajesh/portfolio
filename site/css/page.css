@@ -14,23 +14,33 @@
    a tablet held upright) the canvases are off and the portrait stands alone. */
 .hero--product .hero__stage { container-type: size; }
 .hero--product .hero__stage > img.is-cutout {
-  inset: 0; margin: auto; padding: 0; z-index: 1;
-  width: min(100cqw, 100cqh); height: min(100cqw, 100cqh);
+  inset: 0; padding: 0; z-index: 1; width: 100%; height: 100%; object-fit: contain;
 }
 .hero__stage > canvas.orbit { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; pointer-events: none; display: block; }
 /* the live portrait: the same square as the still, shown in its place once its frames have loaded (.is-live) */
+/* (sized as the still is: the stage's box, the square drawing contained in its middle; js/orbit.js maps the
+   pointer the same way. Container units are avoided: Chrome resolves the stage's height to 0 when it comes
+   from its min-height alone, on short phones) */
 .hero__stage > canvas.portrait {
-  position: absolute; inset: 0; margin: auto; z-index: 1; display: none; pointer-events: none;
-  width: min(100cqw, 100cqh); height: min(100cqw, 100cqh);
+  position: absolute; inset: 0; z-index: 1; display: none; pointer-events: none;
+  width: 100%; height: 100%; max-width: none; object-fit: contain;
 }
 .hero__stage.is-live > canvas.portrait { display: block; }
 .hero__stage.is-live > img.is-cutout { display: none; }
 .hero__stage > .orbit--back { z-index: 0; }
 .hero__stage > .orbit--front { z-index: 2; }
 .hero__stage > .loop-pause { right: 0; bottom: 4px; }
+/* a stage too narrow for the orbits (a phone, a tablet held upright): the live portrait alone */
 @container (max-aspect-ratio: 3 / 2) {
-  .hero__stage > canvas.orbit, .hero__stage > canvas.portrait, .hero__stage.is-live > canvas.portrait, .hero__stage > .loop-pause { display: none; }
-  .hero__stage.is-live > img.is-cutout { display: block; }
+  .hero__stage > canvas.orbit { display: none; }
+}
+@media (max-width: 639px) { .hero__stage > canvas.orbit { display: none; } }
+/* a phone held sideways (a short touch screen): the hero grows with its words and the portrait gets a fixed
+   height under them, instead of a one-screen hero whose portrait runs into the next section */
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  main > section.hero { height: auto; min-height: 100svh; }
+  main > section.hero > .wrap, main > section.hero > .wrap > .hero-text { height: auto; }
+  .hero--product .hero__stage:is(:has(> [data-product]), :has(> img.is-cutout)) { flex: none; height: 300px; min-height: 0; }
 }
 
 /* magnetic pull on the primary actions: the wrapper moves, the button keeps the kit's own hover and press */
@@ -284,8 +294,50 @@ a.sk__chip:hover { color: var(--u-ink); box-shadow: inset 0 0 0 1px var(--u-acce
   .sk__used { gap: 12px 10px; }
   .sk__chip { height: 32px; padding: 0 12px; }
   a.sk__chip::before { content: ""; position: absolute; inset: -6px 0; }
-  .xp__rows > li { padding-block: var(--s-3); }
-  .xp__frame { --ratio: 124%; }
+  .xp__rows > li { padding-block: var(--s-3); grid-template-columns: minmax(0, 1fr); row-gap: 2px; }
+  .xp__rows .rows__value { grid-column: 1; grid-row: auto; text-align: left; }   /* the dates on one line under the role */
+  .xp__frame { --ratio: 112%; }
+
+  /* skills on a phone: the list right under its tabs, so a tap changes what is on screen; the area's
+     paragraph and links after the list. The column is unwrapped into the section's grid to reorder it. */
+  #skills .sk__text { display: contents; }
+  #skills .sk__text > *, #skills .sk__frame { grid-column: 1 / -1; }
+  #skills .section-head { order: 1; margin-bottom: var(--s-5); }
+  #skills .sk__tabs { order: 2; }
+  #skills .sk__frame { order: 3; margin-top: var(--s-4); }
+  #skills .sk__panels { order: 4; margin-top: var(--s-5); }
+  #skills > .wrap { row-gap: 0; }
+
+  /* the hero fits short phones too: the portrait takes what the words leave, down to 160px */
+  .hero--product .hero__stage:is(:has(> [data-product]), :has(> img.is-cutout)) { min-height: 140px; }
+
+  /* the project list shows every project at once: the window grows with it instead of scrolling inside */
+  #projects > .wrap > .px.fill { flex: none; }
+  #projects .px__rows { overflow: visible; }
+
+  /* a clip's play button: a full thumb target */
+  .slot > .loop-pause { right: 10px; bottom: 10px; width: 40px; height: 40px; }
+  .slot > .loop-pause svg { width: 16px; height: 16px; }
+
+  /* a project opens as a full-screen sheet over the page (js/app.js adds a history entry, so back closes it) */
+  html.px-sheet-open, html.px-sheet-open body { overflow: hidden; }
+  html.px-sheet-open #projects > .wrap { z-index: 60; }               /* above the fixed header (z-index 50) */
+  .px > .px__pane--open { border-radius: inherit; }
+  html.px-sheet-open .px.is-open > .px__pane--open {
+    position: fixed; inset: 0; height: 100dvh; border-radius: 0;
+    box-shadow: none; overscroll-behavior: contain;
+  }
+  html.px-sheet-open .px__top {
+    padding: calc(8px + env(safe-area-inset-top)) 16px 0;
+    background: var(--u-bg); position: relative; z-index: 1;
+  }
+  html.px-sheet-open .px__head-meta { display: block; font-size: 13px; }
+  html.px-sheet-open .px__body {
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
+  }
+  html.px-sheet-open .px__ov > .slot { order: -1; }                    /* the picture first in the sheet */
+  .px__row, .px__facet, .px__back, .sk__tab, .sk__chip { -webkit-tap-highlight-color: transparent; }
   /* the footer fits one phone screen: its plain line goes (the name and the role stand right above it) */
   .closing__links > .grid > .span-4 { display: none; }
   .closing__links { gap: var(--s-5); }

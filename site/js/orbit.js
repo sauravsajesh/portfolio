@@ -12,8 +12,10 @@
 
   Light by construction: about 8,000 dots in eight fills, twenty arcs and a dozen discs a frame, 30 frames a
   second, a pixel ratio of 1.5 at most, nothing drawn while the stage is off screen or the tab is hidden.
-  Everything runs on one clock from load and stops on the stage's one pause button. Under reduced motion, on
-  a phone and on touch screens nothing runs: the still portrait and one still frame of the orbits.
+  Everything runs on one clock from load and stops on the stage's one pause button. On a stage too narrow for
+  the orbits (a phone, a tablet held upright) css/page.css hides their canvases and only the portrait runs,
+  with fewer dots; a touch on it lights the dots under the finger, then fades. Under reduced motion nothing
+  runs: the still portrait and one still frame of the orbits.
 */
 const TAU = Math.PI * 2;
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -31,6 +33,7 @@ const NEAR = 170;                                       // px: how far the point
 
 const FRAMES = { src: 'media/avatar-frames.png', n: 36, size: 144, cols: 6, loop: 7 };   // loop: seconds there and back
 const GRID = 155;                                       // dots across the portrait
+const GRID_SMALL = 118;                                 // on a portrait under 420px (a phone): fewer, larger dots
 const LENS = 96;                                        // px: how far the pointer lights the portrait
 const LEVELS = 8;                                       // tone steps, one fill each
 
@@ -77,21 +80,23 @@ export function mountOrbit(stage, { pauseButton } = {}) {
   if (!back || !front || !back.getContext) return null;
   const bx = back.getContext('2d'), fx = front.getContext('2d'), px = face ? face.getContext('2d') : null;
   const col = palette(), motes = dust(56);
-  const fixed = matchMedia('(prefers-reduced-motion: reduce)').matches
-    || matchMedia('(max-width: 639px)').matches || matchMedia('(pointer: coarse)').matches;
+  const fixed = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let W = 0, H = 0, S = 0, dpr = 1;                      // the stage's box and the portrait's square, css px
   let tiltX = 0, tiltY = 0, aimX = 0, aimY = 0;          // the pointer's pull on the plane, -1..1, eased
   let ptr = null;                                        // the pointer in stage px, or null
+  let touch = null, touching = false;                     // a finger on the portrait: { x, y, k }, k fading to 0
+  let orbitsOn = true;                                   // false where css/page.css hides the orbit canvases
   let visible = true, paused = false, raf = 0, last = 0, clock = 0, t0 = performance.now();
   let tones = null, dots = null;                         // the frames, and the dot grid for the current size
 
   // the portrait's dots: hex-packed, each with its place and the tone texel it reads
   const layout = () => {
-    const p = S / GRID, rowH = p * 0.866, rows = Math.floor(S / rowH), T = FRAMES.size;
-    const n = GRID * rows, x = new Float32Array(n), y = new Float32Array(n), at = new Uint32Array(n);
+    const G = S < 420 ? GRID_SMALL : GRID;
+    const p = S / G, rowH = p * 0.866, rows = Math.floor(S / rowH), T = FRAMES.size;
+    const n = G * rows, x = new Float32Array(n), y = new Float32Array(n), at = new Uint32Array(n);
     let k = 0;
-    for (let j = 0; j < rows; j++) for (let i = 0; i < GRID; i++) {
+    for (let j = 0; j < rows; j++) for (let i = 0; i < G; i++) {
       const cx = i * p + p / 2 + (j % 2 ? p / 2 : 0), cy = j * rowH + p / 2;
       if (cx >= S || cy >= S) continue;
       x[k] = cx; y[k] = cy;
@@ -103,11 +108,12 @@ export function mountOrbit(stage, { pauseButton } = {}) {
 
   const size = () => {
     const r = stage.getBoundingClientRect();
-    // css/page.css turns the canvases off on a stage too narrow for the orbits: nothing to size or draw then
-    if (!r.width || !r.height || getComputedStyle(back).display === 'none') return false;
+    if (!r.width || !r.height) return false;
     W = r.width; H = r.height; S = Math.min(W, H);
     dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    for (const c of [back, front]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    // css/page.css turns the orbit canvases off on a stage too narrow for them: they are neither sized nor drawn
+    orbitsOn = getComputedStyle(back).display !== 'none';
+    for (const c of [back, front]) { c.width = orbitsOn ? Math.round(W * dpr) : 0; c.height = orbitsOn ? Math.round(H * dpr) : 0; }
     if (face) { face.width = face.height = Math.round(S * dpr); layout(); }
     return true;
   };
@@ -120,14 +126,15 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     const ph = (t / FRAMES.loop) % 1, tri = 1 - Math.abs(2 * ph - 1), e = tri * tri * (3 - 2 * tri);
     const fp = e * (FRAMES.n - 1), f0 = Math.floor(fp), f1 = Math.min(FRAMES.n - 1, f0 + 1), w = fp - f0;
     const A = f0 * T2, B = f1 * T2;
-    const lx = ptr ? ptr.x - (W - S) / 2 : -1e4, ly = ptr ? ptr.y - (H - S) / 2 : -1e4, lens2 = LENS * LENS;
+    const lp = ptr || touch, lk = ptr ? 1 : touch ? touch.k : 0;   // the mouse lights at once; a finger fades out
+    const lx = lp ? lp.x - (W - S) / 2 : -1e4, ly = lp ? lp.y - (H - S) / 2 : -1e4, lens2 = LENS * LENS;
     bn.fill(0);
     for (let k = 0; k < n; k++) {
       let tone = (tones[A + at[k]] * (1 - w) + tones[B + at[k]] * w) / 255;
       if (tone < 0.055) continue;
       const dx = x[k] - lx, dy = y[k] - ly, d2 = dx * dx + dy * dy;
       let grow = 1;
-      if (d2 < lens2) { const q = 1 - Math.sqrt(d2) / LENS, b = q * q; tone = Math.min(1, tone * (1 + 0.55 * b)); grow = 1 + 0.22 * b; }
+      if (d2 < lens2) { const q = 1 - Math.sqrt(d2) / LENS, b = q * q * lk; tone = Math.min(1, tone * (1 + 0.55 * b)); grow = 1 + 0.22 * b; }
       const lv = Math.min(LEVELS - 1, Math.floor(tone * LEVELS)), o = bn[lv] * 3, buf = buckets[lv];
       buf[o] = x[k]; buf[o + 1] = y[k]; buf[o + 2] = (p * 0.5) * Math.min(0.98, 0.16 + 0.88 * tone) * grow;
       bn[lv]++;
@@ -224,16 +231,17 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     }
   };
 
-  const draw = t => { drawOrbits(t + 14); drawFace(t); };
+  const draw = t => { if (orbitsOn) drawOrbits(t + 14); drawFace(t); };
 
   const frame = now => {
     raf = 0;
-    if (!visible || paused || document.hidden || back.offsetParent === null) return;
+    if (!visible || paused || document.hidden || stage.offsetParent === null) return;
     raf = requestAnimationFrame(frame);
     if (now - last < 32) return;                          // about 30 frames a second
     last = now;
     clock = (now - t0) / 1000;
     tiltX = lerp(tiltX, aimX, 0.06); tiltY = lerp(tiltY, aimY, 0.06);
+    if (touch && !touching) { touch.k -= 0.05; if (touch.k <= 0) touch = null; }
     draw(clock);
   };
   const run = () => { if (!fixed && !raf && visible && !paused && !document.hidden && W) raf = requestAnimationFrame(frame); };
@@ -266,12 +274,19 @@ export function mountOrbit(stage, { pauseButton } = {}) {
     }, { passive: true });
     document.documentElement.addEventListener('pointerleave', () => { ptr = null; aimX = aimY = 0; });
 
+    // a finger on the portrait lights the dots under it while it rests or drags, then they fade; the page still
+    // scrolls as usual (a scroll that starts on the portrait cancels the touch)
+    const touchAt = e => { const b = stage.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top, k: 1 }; };
+    stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; touching = true; touch = touchAt(e); if (paused) still(); }, { passive: true });
+    stage.addEventListener('pointermove', e => { if (e.pointerType === 'touch' && touching) touch = touchAt(e); }, { passive: true });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) stage.addEventListener(ev, e => { if (e.pointerType === 'touch') touching = false; }, { passive: true });
+
     if (pauseButton) {
       stage.append(pauseButton(() => {
         paused = !paused;
         if (paused) { cancelAnimationFrame(raf); raf = 0; } else { t0 = performance.now() - clock * 1000; run(); }
         return paused;
-      }, 'the portrait and orbit animation'));
+      }, orbitsOn ? 'the portrait and orbit animation' : 'the portrait animation'));
     }
     run();
   }
